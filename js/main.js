@@ -4,6 +4,17 @@ import { ProjectModule } from './project.js';
 import { LogModule } from './log.js';
 import { UI } from './ui.js';
 import { TimerModule } from './timer.js';
+import { SyncModule } from './sync.js';
+
+const DEFAULT_FIREBASE_CONFIG = {
+    apiKey: "AIzaSyChK3L_MZ77uAG4ZgWct--5h1A5dTgPz84",
+    authDomain: "devnote-48b39.firebaseapp.com",
+    projectId: "devnote-48b39",
+    storageBucket: "devnote-48b39.firebasestorage.app",
+    messagingSenderId: "472866404045",
+    appId: "1:472866404045:web:d2d652ff67aaa3997a5b84",
+    measurementId: "G-5F83S6DD16"
+};
 
 const App = {
     data: null,
@@ -12,6 +23,25 @@ const App = {
     init() {
         // Load Data
         this.data = Storage.load();
+
+        // Try Init Sync
+        const storedKey = localStorage.getItem('devnote_sync_key');
+        // Always try to use default config if no override
+        const storedConfigStr = localStorage.getItem('devnote_firebase_config');
+        const config = storedConfigStr ? JSON.parse(storedConfigStr) : DEFAULT_FIREBASE_CONFIG;
+
+        if (storedKey) {
+            try {
+                // Ensure Firebase is loaded before init
+                if (window.Firebase && SyncModule.init(config, storedKey)) {
+                    console.log('Cloud Sync Ready');
+                } else if (!window.Firebase) {
+                    console.warn('Firebase SDK not loaded yet. Sync disabled for this session.');
+                }
+            } catch (e) {
+                console.error('Sync Init Error:', e);
+            }
+        }
 
         // Init UI with handlers
         UI.init({
@@ -25,7 +55,10 @@ const App = {
             onDataExport: () => this.handleExportData(),
             onDataImport: (file) => this.handleImportData(file),
             onSearch: (query) => this.handleSearch(query),
-            onReview: (isGlobal) => this.handleReview(isGlobal)
+            onReview: (isGlobal) => this.handleReview(isGlobal),
+            // Sync Handlers
+            onSaveSettings: (key, config) => this.handleSaveSettings(key, config),
+            onSync: () => this.handleSync(),
         });
 
         // Init Timer
@@ -156,6 +189,48 @@ const App = {
             }
         };
         reader.readAsText(file);
+    },
+
+    handleSaveSettings(key, configStr) {
+        if (!key) {
+            alert('合言葉(ユーザーID)を入力してください。');
+            return;
+        }
+
+        let config = DEFAULT_FIREBASE_CONFIG;
+        if (configStr && configStr.trim() !== '') {
+            try {
+                config = JSON.parse(configStr);
+                localStorage.setItem('devnote_firebase_config', configStr);
+            } catch (e) {
+                alert('JSONの形式が正しくありません。');
+                return;
+            }
+        }
+
+        localStorage.setItem('devnote_sync_key', key);
+
+        if (SyncModule.init(config, key)) {
+            alert('接続に成功しました！データをクラウドに保存します...');
+            this.handleSync(); // Auto save on connect
+        } else {
+            alert('接続に失敗しました。');
+        }
+    },
+
+    async handleSync() {
+        const statusEl = document.getElementById('sync-status');
+        if (statusEl) statusEl.textContent = '同期中...';
+
+        // 1. Save (Push)
+        const resSave = await SyncModule.save(this.data);
+        if (resSave.success) {
+            if (statusEl) statusEl.textContent = '✅ 保存完了';
+            setTimeout(() => { if (statusEl) statusEl.textContent = '接続済み'; }, 2000);
+        } else {
+            alert('同期エラー: ' + resSave.error);
+            if (statusEl) statusEl.textContent = '❌ エラー';
+        }
     },
 
     // Feature: Search
