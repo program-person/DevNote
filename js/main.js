@@ -59,6 +59,10 @@ const App = {
             // Sync Handlers
             onSaveSettings: (key, config) => this.handleSaveSettings(key, config),
             onSync: () => this.handleSync(),
+            // Phase 6: UI Enhancement Handlers
+            onThemeToggle: () => this.handleThemeToggle(),
+            onLogSort: (sortType) => this.handleLogSort(sortType),
+            onTagFilter: (tag) => this.handleTagFilter(tag)
         });
 
         // Init Timer
@@ -67,6 +71,14 @@ const App = {
         const btnReset = document.getElementById('btn-timer-reset');
         if (timerDisplay && btnStart && btnReset) {
             TimerModule.init(timerDisplay, btnStart, btnReset);
+        }
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('devnote_theme');
+        if (savedTheme) {
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            const btn = document.getElementById('btn-theme-toggle');
+            if (btn) btn.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
         }
 
         // Initial Render

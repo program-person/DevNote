@@ -1,12 +1,79 @@
 :root {
+    /* Light Theme */
     --bg-color: #f4f4f9;
-    --sidebar-bg: #2c3e50;
+    --bg-gradient-start: #e0c3fc;
+    --bg-gradient-end: #8ec5fc;
+    --sidebar-bg: rgba(44, 62, 80, 0.6);
     --sidebar-text: #ecf0f1;
     --primary-color: #3498db;
     --accent-color: #e74c3c;
     --text-color: #333;
     --border-color: #ddd;
     --card-bg: #fff;
+    --card-shadow: rgba(0, 0, 0, 0.05);
+    --modal-bg: white;
+    --input-bg: white;
+    --input-border: #ddd;
+    --hover-bg: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] {
+    /* Dark Theme */
+    --bg-color: #1a1a2e;
+    --bg-gradient-start: #0f3460;
+    --bg-gradient-end: #16213e;
+    --sidebar-bg: rgba(22, 33, 62, 0.8);
+    --sidebar-text: #eaeaea;
+    --primary-color: #4a90e2;
+    --accent-color: #e85d75;
+    --text-color: #e0e0e0;
+    --border-color: #444;
+    --card-bg: #2a2a3e;
+    --card-shadow: rgba(0, 0, 0, 0.3);
+    --modal-bg: #2a2a3e;
+    --input-bg: #1f1f2e;
+    --input-border: #444;
+    --hover-bg: rgba(74, 144, 226, 0.15);
+}
+
+/* Smooth color transitions */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* Animation Keyframes */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-20px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
 }
 
 * {
@@ -21,9 +88,8 @@ body {
     padding: 0;
     display: flex;
     height: 100vh;
-    background: linear-gradient(120deg, #e0c3fc 0%, #8ec5fc 100%);
-    /* Soft Lavender to Blue */
-    color: #333;
+    background: linear-gradient(120deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+    color: var(--text-color);
 }
 
 .app-container {
@@ -124,8 +190,15 @@ body {
     padding: 1rem;
     margin-bottom: 1rem;
     border-radius: 6px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 2px 4px var(--card-shadow);
     border-left: 4px solid var(--primary-color);
+    animation: slideDown 0.3s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.log-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px var(--card-shadow);
 }
 
 .log-card.type-error {
@@ -188,16 +261,19 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+    animation: fadeIn 0.2s ease;
+    z-index: 1000;
 }
 
 .modal-content {
-    background: white;
+    background: var(--modal-bg);
+    color: var(--text-color);
     padding: 2rem;
     border-radius: 8px;
     width: 400px;
     position: relative;
     max-height: 90vh;
-    /* Prevent off-screen */
+    animation: modalFadeIn 0.3s ease;
     overflow-y: auto;
     /* Enable scrolling */
 }
