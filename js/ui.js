@@ -111,9 +111,12 @@ export const UI = {
         });
 
         elements.closeModals.forEach(btn => {
-            btn.addEventListener('click', () => {
-                elements.modalProject.classList.add('hidden');
-                elements.modalLog.classList.add('hidden');
+            btn.addEventListener('click', (e) => {
+                // Find the parent modal and close it
+                const modal = e.target.closest('.modal');
+                if (modal) {
+                    modal.classList.add('hidden');
+                }
             });
         });
 
