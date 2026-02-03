@@ -1,31 +1,32 @@
 
 export const UI = {
-    elements: {
-        projectList: document.getElementById('project-list'),
-        logList: document.getElementById('log-list'),
-        modalProject: document.getElementById('modal-project'),
-        modalLog: document.getElementById('modal-log'),
-        currentProjectTitle: document.getElementById('current-project-title'),
-        btnNewProject: document.getElementById('btn-new-project'),
-        btnNewLog: document.getElementById('btn-new-log'),
-        formProject: document.getElementById('form-project'),
-        formLog: document.getElementById('form-log'),
-        closeModals: document.querySelectorAll('.close-modal'),
-        dashboardView: document.getElementById('dashboard-view'),
-        logListView: document.getElementById('log-list-view'),
-        totalLogsCount: document.getElementById('total-logs-count'),
-
-        // Phase 3
-        logIdInput: document.getElementById('log-id'),
-        modalLogTitle: document.getElementById('modal-log-title'),
-        btnToggleCheatSheet: document.getElementById('btn-toggle-cheat-sheet'),
-        cheatSheet: document.getElementById('cheat-sheet'),
-        // Phase 4
-        tagSuggestions: document.getElementById('tag-suggestions')
-    },
+    elements: {},
 
     init(handlers) {
         this.handlers = handlers;
+
+        // Initialize elements AFTER DOM is ready
+        this.elements = {
+            projectList: document.getElementById('project-list'),
+            logList: document.getElementById('log-list'),
+            modalProject: document.getElementById('modal-project'),
+            modalLog: document.getElementById('modal-log'),
+            currentProjectTitle: document.getElementById('current-project-title'),
+            btnNewProject: document.getElementById('btn-new-project'),
+            btnNewLog: document.getElementById('btn-new-log'),
+            formProject: document.getElementById('form-project'),
+            formLog: document.getElementById('form-log'),
+            closeModals: document.querySelectorAll('.close-modal'),
+            dashboardView: document.getElementById('dashboard-view'),
+            logListView: document.getElementById('log-list-view'),
+            totalLogsCount: document.getElementById('total-logs-count'),
+            logIdInput: document.getElementById('log-id'),
+            modalLogTitle: document.getElementById('modal-log-title'),
+            btnToggleCheatSheet: document.getElementById('btn-toggle-cheat-sheet'),
+            cheatSheet: document.getElementById('cheat-sheet'),
+            tagSuggestions: document.getElementById('tag-suggestions')
+        };
+
         this.setupEventListeners();
 
         // Initialize Mermaid
