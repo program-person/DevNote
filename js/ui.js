@@ -564,132 +564,84 @@ export const UI = {
             }
         }
     },
-    const dateStr = d.toISOString().split('T')[0];
-    const count = daysMap[dateStr] || 0;
 
-    // Determine Level
-    let level = 0;
-    if(count >= 1) level = 1;
-if (count >= 3) level = 2;
-if (count >= 5) level = 3;
-if (count >= 8) level = 4;
 
-const cell = document.createElement('div');
-cell.className = `contrib-day contrib-level-${level}`;
-cell.dataset.date = dateStr;
-cell.dataset.count = count;
-cell.title = `${dateStr}: ${count} logs`; // Fallback tooltip
-graphContainer.appendChild(cell);
-            }
-        }
+    showProjectView(project) {
+        this.elements.dashboardView.classList.add('hidden');
+        document.getElementById('review-view').classList.add('hidden'); // Ensure review is hidden
+        this.elements.logListView.classList.remove('hidden');
 
-// 4. Recent Activity (Last 5)
-const recentContainer = document.getElementById('recent-activity-list');
-if (recentContainer) {
-    recentContainer.innerHTML = '';
-    const recentLogs = [...allLogs].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5);
+        // Show Search Bar and Review Button
+        document.getElementById('search-bar-container').style.display = 'block';
+        document.getElementById('btn-review-mode').style.display = 'inline-block';
 
-    if (recentLogs.length === 0) {
-        recentContainer.innerHTML = '<p style="color:#888;">まだログがありません。</p>';
-    } else {
-        recentLogs.forEach(log => {
-            const item = document.createElement('div');
-            item.style.cssText = 'padding:10px; border-bottom:1px solid #f0f0f0; display:flex; flex-direction:column; gap:4px; cursor:pointer; transition:background 0.2s;';
-            item.innerHTML = `
-                        <div style="font-weight:bold; color:#333;">${this.escapeHtml(log.title)}</div>
-                        <div style="font-size:0.8rem; color:#888;">
-                            <span style="background:#eee; padding:2px 6px; border-radius:4px; margin-right:5px;">${log.type}</span>
-                            ${new Date(log.createdAt).toLocaleDateString('ja-JP')}
-                        </div>
-                    `;
-            item.onmouseover = () => item.style.background = '#f9f9f9';
-            item.onmouseout = () => item.style.background = 'transparent';
-
-            // Allow jumping to project? (Complex as we need project context)
-            // For now, simple view or just info
-            // Ideally: Switch to project and show log.
-            recentContainer.appendChild(item);
-        });
-    }
-}
+        this.elements.currentProjectTitle.textContent = project.name;
+        this.elements.btnNewLog.disabled = false;
     },
 
-showProjectView(project) {
-    this.elements.dashboardView.classList.add('hidden');
-    document.getElementById('review-view').classList.add('hidden'); // Ensure review is hidden
-    this.elements.logListView.classList.remove('hidden');
+    showDashboard() {
+        this.elements.dashboardView.classList.remove('hidden');
+        this.elements.logListView.classList.add('hidden');
+        this.elements.currentProjectTitle.textContent = 'Select a Project';
+        this.elements.btnNewLog.disabled = true;
+        // Also remove active class from list
+        const activeItem = this.elements.projectList.querySelector('.active');
+        if (activeItem) activeItem.classList.remove('active');
+    },
 
-    // Show Search Bar and Review Button
-    document.getElementById('search-bar-container').style.display = 'block';
-    document.getElementById('btn-review-mode').style.display = 'inline-block';
+    // Phase 4 Bonus: Review Mode
+    showReviewCard(log) {
+        // Switch View
+        this.elements.logListView.classList.add('hidden');
+        this.elements.dashboardView.classList.add('hidden');
+        const reviewView = document.getElementById('review-view');
+        reviewView.classList.remove('hidden');
 
-    this.elements.currentProjectTitle.textContent = project.name;
-    this.elements.btnNewLog.disabled = false;
-},
+        // Reset Card State
+        document.getElementById('review-answer-container').classList.add('hidden');
+        const btnShow = document.getElementById('btn-show-answer');
+        const btnNext = document.getElementById('btn-next-review');
+        btnShow.classList.remove('hidden');
+        btnNext.classList.add('hidden');
 
-showDashboard() {
-    this.elements.dashboardView.classList.remove('hidden');
-    this.elements.logListView.classList.add('hidden');
-    this.elements.currentProjectTitle.textContent = 'Select a Project';
-    this.elements.btnNewLog.disabled = true;
-    // Also remove active class from list
-    const activeItem = this.elements.projectList.querySelector('.active');
-    if (activeItem) activeItem.classList.remove('active');
-},
+        // Set Content
+        document.getElementById('review-title').textContent = log.title;
+        document.getElementById('review-type').textContent = log.type;
+        document.getElementById('review-content').innerHTML = DOMPurify.sanitize(marked.parse(log.content));
 
-// Phase 4 Bonus: Review Mode
-showReviewCard(log) {
-    // Switch View
-    this.elements.logListView.classList.add('hidden');
-    this.elements.dashboardView.classList.add('hidden');
-    const reviewView = document.getElementById('review-view');
-    reviewView.classList.remove('hidden');
+        // Syntax Highlight for Answer
+        document.getElementById('review-content').querySelectorAll('pre code').forEach(block => {
+            if (block.classList.contains('language-mermaid')) return;
+            hljs.highlightElement(block);
+        });
 
-    // Reset Card State
-    document.getElementById('review-answer-container').classList.add('hidden');
-    const btnShow = document.getElementById('btn-show-answer');
-    const btnNext = document.getElementById('btn-next-review');
-    btnShow.classList.remove('hidden');
-    btnNext.classList.add('hidden');
+        // Extras
+        this.renderMarkdownExtras(document.getElementById('review-content'));
 
-    // Set Content
-    document.getElementById('review-title').textContent = log.title;
-    document.getElementById('review-type').textContent = log.type;
-    document.getElementById('review-content').innerHTML = DOMPurify.sanitize(marked.parse(log.content));
+        // Event Listeners (Using .onclick to prevent multiple listeners stacking)
+        btnShow.onclick = () => {
+            document.getElementById('review-answer-container').classList.remove('hidden');
+            btnShow.classList.add('hidden');
+            btnNext.classList.remove('hidden');
+        };
 
-    // Syntax Highlight for Answer
-    document.getElementById('review-content').querySelectorAll('pre code').forEach(block => {
-        if (block.classList.contains('language-mermaid')) return;
-        hljs.highlightElement(block);
-    });
+        btnNext.onclick = () => {
+            this.handlers.onReview(); // Get another random log
+        };
 
-    // Extras
-    this.renderMarkdownExtras(document.getElementById('review-content'));
+        document.getElementById('btn-close-review').onclick = () => {
+            reviewView.classList.add('hidden');
+            this.elements.logListView.classList.remove('hidden');
+        };
+    },
 
-    // Event Listeners (Using .onclick to prevent multiple listeners stacking)
-    btnShow.onclick = () => {
-        document.getElementById('review-answer-container').classList.remove('hidden');
-        btnShow.classList.add('hidden');
-        btnNext.classList.remove('hidden');
-    };
-
-    btnNext.onclick = () => {
-        this.handlers.onReview(); // Get another random log
-    };
-
-    document.getElementById('btn-close-review').onclick = () => {
-        reviewView.classList.add('hidden');
-        this.elements.logListView.classList.remove('hidden');
-    };
-},
-
-escapeHtml(text) {
-    if (!text) return '';
-    return text
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-}
+    escapeHtml(text) {
+        if (!text) return '';
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
 };
