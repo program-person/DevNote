@@ -268,14 +268,7 @@ export const UI = {
             });
         });
 
-        // Help Toggle
-        const btnHelp = document.getElementById('btn-help');
-        const modalHelp = document.getElementById('modal-help');
-        if (btnHelp && modalHelp) {
-            btnHelp.addEventListener('click', () => {
-                modalHelp.classList.remove('hidden');
-            });
-        }
+
 
         // Cheat Sheet Toggle
         elements.btnToggleCheatSheet.addEventListener('click', () => {
