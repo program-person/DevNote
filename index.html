@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevNote - Developer Learning Notebook</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Highlight.js Theme -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <!-- KaTeX for Math -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <!-- Mermaid for Diagrams -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.0/dist/mermaid.min.js"></script>
+    <!-- Chart.js for Analytics -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar: Project List -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1 id="app-logo" style="cursor:pointer;" title="トップに戻る">DevNote</h1>
+                <button id="btn-new-project" class="btn-primary small">+ プロジェクト</button>
+            </div>
+
+            <!-- Focus Timer -->
+            <div id="timer-container" class="timer-container"
+                style="padding:15px; text-align:center; background:rgba(0,0,0,0.2); margin:10px; border-radius:8px;">
+                <div id="timer-display" style="font-size:2rem; font-family:monospace; font-weight:bold; color:#fff;">
+                    25:00</div>
+                <div class="timer-controls" style="margin-top:10px;">
+                    <button id="btn-timer-start" class="btn-icon"
+                        style="background:#2ecc71; color:white; border:none; width:30px; height:30px; border-radius:50%; cursor:pointer;">▶</button>
+                    <button id="btn-timer-reset" class="btn-icon"
+                        style="background:#e74c3c; color:white; border:none; width:30px; height:30px; border-radius:50%; cursor:pointer; margin-left:5px;">⏹</button>
+                </div>
+            </div>
+
+            <ul id="project-list" class="project-list">
+                <!-- Project items will be injected here -->
+            </ul>
+
+            <!-- Phase 4: Data Management Footer -->
+            <div style="margin-top:auto; padding-top:1rem; border-top:1px solid #34495e;">
+                <button id="btn-export-data" class="btn-text" style="color:#ecf0f1; font-size:0.8rem;">💾
+                    保存</button>
+                <button id="btn-import-data" class="btn-text" style="color:#ecf0f1; font-size:0.8rem;">📂 復元</button>
+                <button id="btn-open-settings" class="btn-text" style="color:#ecf0f1; font-size:0.8rem;">☁️ 設定</button>
+                <button id="btn-help" class="btn-text" style="color:#ecf0f1; font-size:0.8rem;">❓ ヘルプ</button>
+                <input type="file" id="file-import" style="display:none" accept=".json">
+            </div>
+        </aside>
+
+        <!-- Main Content: Log List & Editor -->
+        <main class="main-content">
+            <header class="main-header">
+                <h2 id="current-project-title">プロジェクトを選択してください</h2>
+
+                <!-- Phase 4: Search Bar -->
+                <div class="search-container" style="flex:1; margin:0 20px; max-width:400px; display:none;"
+                    id="search-bar-container">
+                    <input type="text" id="search-input" placeholder="ログを検索..."
+                        style="width:100%; padding:0.5rem; border:1px solid #ddd; border-radius:4px;">
+                </div>
+
+                <div class="header-actions">
+                    <button id="btn-review-mode" class="btn-primary"
+                        style="background-color:#9b59b6; margin-right:10px; display:none;">🎲 振り返り</button>
+                    <button id="btn-new-log" class="btn-primary" disabled>+ 新規ログ</button>
+                    <!-- <button id="btn-settings" class="btn-icon">⚙️</button> -->
+                </div>
+            </header>
+
+            <div id="dashboard-view" class="view-container">
+                <div class="dashboard-grid"
+                    style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; padding:20px;">
+                    <!-- Left Col: Stats -->
+                    <div class="dashboard-col">
+                        <div class="stats-card">
+                            <h3>📝 記録したログ総数</h3>
+                            <p id="total-logs-count" style="font-size:3rem; font-weight:bold; color:#3498db;">0</p>
+                        </div>
+
+                        <div class="stats-card" style="margin-top:20px;">
+                            <h3>📊 ログの内訳</h3>
+                            <div id="stats-type-breakdown" style="margin-top:10px;">
+                                <!-- Bars will be injected here -->
+                            </div>
+                        </div>
+
+                        <button id="btn-quick-review" class="btn-primary"
+                            style="width:100%; margin-top:20px; background:linear-gradient(to right, #9b59b6, #8e44ad);">
+                            🎲 今すぐ振り返り (ランダム)
+                        </button>
+                    </div>
+
+                    <!-- Right Col: Recent Activity -->
+                    <div class="dashboard-col">
+                        <div class="recent-card"
+                            style="background:white; padding:20px; border-radius:8px; box-shadow:0 4px 6px rgba(0,0,0,0.05);">
+                            <h3 style="border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:10px;">🕒 最近の活動
+                            </h3>
+                            <div id="recent-activity-list">
+                                <!-- Recent items here -->
+                                <p style="color:#888;">まだログがありません。</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="log-list-view" class="view-container hidden">
+                <div id="log-list" class="log-list">
+                    <!-- Logs will be injected here -->
+                </div>
+            </div>
+
+            <!-- Phase 4 Bonus: Review Mode -->
+            <div id="review-view" class="view-container hidden" style="text-align:center; padding-top:2rem;">
+                <div class="review-card"
+                    style="max-width:600px; margin:0 auto; background:white; padding:2rem; border-radius:12px; box-shadow:0 4px 15px rgba(0,0,0,0.1);">
+                    <h3 style="color:#7f8c8d; margin-bottom:1rem;">過去の自分からの挑戦状 🎲</h3>
+                    <div id="review-question" style="margin-bottom:2rem;">
+                        <h2 id="review-title" style="font-size:1.8rem; color:#2c3e50;">Question Title</h2>
+                        <span id="review-type" class="tag-chip"
+                            style="background:#eee; padding:4px 8px; border-radius:4px;">Type</span>
+                    </div>
+
+                    <div id="review-answer-container" class="hidden">
+                        <hr style="margin:2rem 0; border:none; border-top:1px dashed #ddd;">
+                        <div id="review-content" class="markdown-body" style="text-align:left;">
+                            <!-- Answer content -->
+                        </div>
+                    </div>
+
+                    <div style="margin-top:2rem;">
+                        <button id="btn-show-answer" class="btn-primary" style="background:#3498db;">答えを見る</button>
+                        <button id="btn-next-review" class="btn-primary hidden" style="background:#2ecc71;">次の挑戦へ
+                            ➡️</button>
+                        <button id="btn-close-review" class="btn-text">終了する</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modal: Create Project -->
+    <div id="modal-project" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>新しいプロジェクトを作成</h2>
+            <form id="form-project">
+                <div class="form-group">
+                    <label for="project-name">プロジェクト名</label>
+                    <input type="text" id="project-name" required placeholder="例: React学習, 個人開発アプリ">
+                </div>
+                <div class="form-group">
+                    <label for="project-desc">説明（任意）</label>
+                    <input type="text" id="project-desc" placeholder="このプロジェクトの概要...">
+                </div>
+                <button type="submit" class="btn-primary">作成する</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Create/Edit Log -->
+    <div id="modal-log" class="modal hidden">
+        <div class="modal-content large">
+            <span class="close-modal">&times;</span>
+            <h2 id="modal-log-title">新規ログ</h2>
+            <form id="form-log">
+                <input type="hidden" id="log-id">
+                <div class="form-group">
+                    <label for="log-title">タイトル</label>
+                    <input type="text" id="log-title" required placeholder="例: 〇〇のエラー解決, ××の学習記録">
+                </div>
+                <div class="form-group row" style="display:flex; gap:10px;">
+                    <div class="col" style="flex:1;">
+                        <label for="log-type">種類</label>
+                        <select id="log-type">
+                            <option value="learning">学習 (Learning)</option>
+                            <option value="error">エラー解決 (Error)</option>
+                            <option value="idea">アイデア (Idea)</option>
+                            <option value="anti-pattern">アンチパターン (Anti-Pattern)</option>
+                        </select>
+                    </div>
+                    <div class="col" style="flex:1;">
+                        <label for="log-level">理解度</label>
+                        <select id="log-level">
+                            <option value="5">★★★★★ (完璧)</option>
+                            <option value="4">★★★★☆ (良い)</option>
+                            <option value="3" selected>★★★☆☆ (普通)</option>
+                            <option value="2">★★☆☆☆ (不安)</option>
+                            <option value="1">★☆☆☆☆ (要復習)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Tags Input -->
+                <div class="form-group">
+                    <label for="log-tags">タグ (カンマ区切り)</label>
+                    <input type="text" id="log-tags" placeholder="例: JavaScript, バグ, 初心者">
+                    <!-- Suggested Tags Area -->
+                    <div id="tag-suggestions" style="margin-top:5px; display:flex; flex-wrap:wrap; gap:5px;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="log-content">内容 (Markdown)</label>
+                    <!-- Templates -->
+                    <div style="margin-bottom:5px; display:flex; gap:5px;">
+                        <span style="font-size:0.8rem; color:#666; align-self:center;">テンプレート:</span>
+                        <button type="button" class="btn-template" data-tmpl="bug"
+                            style="cursor:pointer; padding:2px 8px; border-radius:4px; border:1px solid #ddd; background:#f9f9f9;">🐛
+                            バグ報告</button>
+                        <button type="button" class="btn-template" data-tmpl="learning"
+                            style="cursor:pointer; padding:2px 8px; border-radius:4px; border:1px solid #ddd; background:#f9f9f9;">📚
+                            学習メモ</button>
+                        <button type="button" class="btn-template" data-tmpl="idea"
+                            style="cursor:pointer; padding:2px 8px; border-radius:4px; border:1px solid #ddd; background:#f9f9f9;">💡
+                            アイデア</button>
+                    </div>
+                    <textarea id="log-content" rows="10" required
+                        placeholder="# タイトル&#10;- 項目1&#10;```js&#10;console.log('test')&#10;```"></textarea>
+                </div>
+
+                <!-- Markdown Cheat Sheet -->
+                <div class="cheat-sheet-container">
+                    <button type="button" id="btn-toggle-cheat-sheet" class="btn-text">Markdownガイドを表示</button>
+                    <div id="cheat-sheet" class="cheat-sheet hidden">
+                        <h4>Markdown 記法ガイド</h4>
+                        <ul>
+                            <li><strong># Title</strong> : 見出し (H1) <span
+                                    style="color:#e74c3c; font-size:0.8em;">(半角スペース必須)</span></li>
+                            <li><strong>## Subtitle</strong> : 小見出し (H2)</li>
+                            <li><strong>- List</strong> : リスト <span
+                                    style="color:#e74c3c; font-size:0.8em;">(半角スペース必須)</span></li>
+                            <li><strong>**Bold**</strong> : 太字</li>
+                            <li><strong>```js</strong> : コードブロック (JS)</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary">保存する</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.6/purify.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+    <!-- Firebase SDK (Modular) -->
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+        // Make available globally for our app modules
+        window.Firebase = { initializeApp, getFirestore, doc, getDoc, setDoc };
+    </script>
+
+    <!-- Scripts -->
+    <script type="module" src="js/main.js"></script>
+
+    <!-- Modal: Data Settings (Cloud Sync) -->
+    <div id="modal-settings" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>☁️ クラウド同期設定</h2>
+            <p style="font-size:0.9rem; color:#666; margin-bottom:15px;">
+                Firebaseの設定と「合言葉」を入力すると、複数端末でデータを同期できます。
+            </p>
+            <form id="form-settings">
+                <div class="form-group">
+                    <label for="sync-key">合言葉 (ユーザーID)</label>
+                    <input type="text" id="sync-key" placeholder="例: my-secret-key-123" style="font-family:monospace;">
+                    <small>※ このキーを知っている人だけがデータにアクセスできます。</small>
+                </div>
+                <!-- Simplified for MVP: We might hardcode the App Config or ask user to input JSON? 
+                     Asking for JSON is flexible but hard for users. 
+                     For this "Person on the go", maybe I (the agent) provide a default config or instructions? 
+                     User asked "should I use Firebase?". 
+                     I'll add a textarea for JSON config for now to be generic. 
+                -->
+                <details>
+                    <summary style="cursor:pointer; margin-bottom:10px;">Firebase Config (Advanced)</summary>
+                    <div class="form-group">
+                        <textarea id="firebase-config" rows="5" placeholder='{"apiKey": "...", "projectId": "..."}'
+                            style="font-family:monospace; font-size:0.8rem;"></textarea>
+                    </div>
+                </details>
+
+                <div style="margin-top:20px; display:flex; justify-content:space-between;">
+                    <button type="button" id="btn-save-settings" class="btn-primary">保存して接続</button>
+                    <button type="button" id="btn-force-sync" class="btn-secondary">🔄 手動同期</button>
+                </div>
+                <div id="sync-status" style="margin-top:10px; font-size:0.9rem; text-align:center; color:#888;">
+                    未接続
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Help & Guide -->
+    <div id="modal-help" class="modal hidden">
+        <div class="modal-content large" style="max-height:85vh; overflow-y:auto;">
+            <span class="close-modal">&times;</span>
+            <h2 style="border-bottom:2px solid #3498db; padding-bottom:10px; margin-bottom:20px;">DevNote ユーザーガイド</h2>
+
+            <section class="help-section">
+                <h3>⌨️ キーボードショートカット</h3>
+                <table class="help-table" style="width:100%; border-collapse:collapse; margin-bottom:20px;">
+                    <style>
+                        .help-table td {
+                            padding: 8px;
+                            border-bottom: 1px solid #eee;
+                        }
+                    </style>
+                    <tr>
+                        <td><kbd>Ctrl</kbd> + <kbd>N</kbd></td>
+                        <td>新規ログ作成 (プロジェクト選択時)</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd> + <kbd>K</kbd></td>
+                        <td>検索バーにフォーカス</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Ctrl</kbd> + <kbd>Enter</kbd></td>
+                        <td>ログを保存 (エディタ内)</td>
+                    </tr>
+                    <tr>
+                        <td><kbd>Esc</kbd></td>
+                        <td>モーダルを閉じる</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section class="help-section">
+                <h3>⏰ 集中タイマー (Pomodoro)</h3>
+                <p>サイドバーのタイマーで25分間の集中作業を管理できます。</p>
+                <ul>
+                    <li>作業が終わったらログを残す習慣をつけましょう。</li>
+                    <li>ページを離れるとリセットされるので注意！</li>
+                </ul>
+            </section>
+
+            <section class="help-section">
+                <h3>📝 Markdown & 拡張機能</h3>
+                <div class="markdown-preview">
+                    <p>標準のMarkdownに加え、以下の拡張が使えます。</p>
+                    <h4>Mermaid (図解)</h4>
+                    <pre style="background:#333; color:white; padding:10px;"><code>```mermaid
+graph TD; A-->B;
+```</code></pre>
+                    <h4>KaTeX (数式)</h4>
+                    <pre style="background:#333; color:white; padding:10px;"><code>$ E = mc^2 $</code></pre>
+                </div>
+            </section>
+        </div>
+    </div>
+</body>
+
+</html>
