@@ -279,6 +279,50 @@ const App = {
         // Simple Random Selection
         const randomLog = logs[Math.floor(Math.random() * logs.length)];
         UI.showReviewCard(randomLog);
+    },
+
+    handleThemeToggle() {
+        const html = document.documentElement;
+        const currentTheme = html.getAttribute('data-theme');
+        const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+        html.setAttribute('data-theme', newTheme);
+        localStorage.setItem('devnote_theme', newTheme);
+
+        // Update button icon
+        const btn = document.getElementById('btn-theme-toggle');
+        if (btn) btn.textContent = newTheme === 'dark' ? '☀️' : '🌙';
+    },
+
+    handleLogSort(sortType) {
+        if (!this.currentProjectId) return;
+
+        const logs = LogModule.findByProject(this.data, this.currentProjectId);
+        let sorted = [...logs];
+
+        switch (sortType) {
+            case 'date-new':
+                sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+                break;
+            case 'date-old':
+                sorted.sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt));
+                break;
+            case 'title':
+                sorted.sort((a, b) => a.title.localeCompare(b.title, 'ja'));
+                break;
+            case 'level':
+                sorted.sort((a, b) => (a.level || 3) - (b.level || 3));
+                break;
+        }
+
+        UI.renderLogList(sorted);
+    },
+
+    handleTagFilter(tag) {
+        if (!this.currentProjectId) return;
+
+        const logs = LogModule.findByProject(this.data, this.currentProjectId);
+        const filtered = tag ? logs.filter(l => l.tags && l.tags.includes(tag)) : logs;
+        UI.renderLogList(filtered);
     }
 };
 

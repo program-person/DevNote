@@ -273,6 +273,17 @@ export const UI = {
         });
 
 
+        // Phase 6: Theme Toggle
+        const btnThemeToggle = document.getElementById('btn-theme-toggle');
+        if (btnThemeToggle) {
+            btnThemeToggle.addEventListener('click', () => handlers.onThemeToggle());
+        }
+
+        // Phase 6: Log Sort
+        const sortSelect = document.getElementById('log-sort');
+        if (sortSelect) {
+            sortSelect.addEventListener('change', (e) => handlers.onLogSort(e.target.value));
+        }
 
         // Cheat Sheet Toggle
         elements.btnToggleCheatSheet.addEventListener('click', () => {
@@ -617,6 +628,10 @@ export const UI = {
         // Show Search Bar and Review Button
         document.getElementById('search-bar-container').style.display = 'block';
         document.getElementById('btn-review-mode').style.display = 'inline-block';
+
+        // Show sort dropdown
+        const sortDropdown = document.getElementById('log-sort');
+        if (sortDropdown) sortDropdown.style.display = 'inline-block';
 
         this.elements.currentProjectTitle.textContent = project.name;
         this.elements.btnNewLog.disabled = false;
