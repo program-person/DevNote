@@ -88,16 +88,35 @@
                 <div class="dashboard-grid"
                     style="display:grid; grid-template-columns: 1fr 1fr; gap:20px; padding:20px;">
                     <!-- Left Col: Stats -->
+
                     <div class="dashboard-col">
+                        <!-- Summary Stats -->
                         <div class="stats-card">
-                            <h3>📝 記録したログ総数</h3>
-                            <p id="total-logs-count" style="font-size:3rem; font-weight:bold; color:#3498db;">0</p>
+                            <h3 style="margin-bottom:15px; font-size:1rem;">📈 アクティビティ</h3>
+                            <div style="display:flex; justify-content:space-between; text-align:center;">
+                                <div>
+                                    <div style="font-size:0.8rem; color:#888;">Total</div>
+                                    <div id="stat-total" style="font-size:1.5rem; font-weight:bold; color:#3498db;">
+                                        0</div>
+                                </div>
+                                <div>
+                                    <div style="font-size:0.8rem; color:#888;">Weekly</div>
+                                    <div id="stat-weekly" style="font-size:1.5rem; font-weight:bold;">0</div>
+                                </div>
+                                <div>
+                                    <div style="font-size:0.8rem; color:#888;">Streak</div>
+                                    <div id="stat-streak" style="font-size:1.5rem; font-weight:bold; color:#e67e22;">0
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
+                        <!-- Language Stats -->
                         <div class="stats-card" style="margin-top:20px;">
-                            <h3>📊 ログの内訳</h3>
-                            <div id="stats-type-breakdown" style="margin-top:10px;">
-                                <!-- Bars will be injected here -->
+                            <h3 style="margin-bottom:10px; font-size:1rem;">📊 言語・タグ分布</h3>
+                            <div id="stats-languages" style="display:flex; flex-direction:column; gap:8px;">
+                                <!-- Language bars injected here -->
+                                <p style="color:#aaa; font-size:0.8rem;">データ収集中...</p>
                             </div>
                         </div>
 
@@ -152,7 +171,8 @@
                         <span style="font-size:2rem;">📘</span>
                         <div>
                             <h3 style="margin:0; font-size:1.3rem;">DevNote</h3>
-                            <p style="margin:0; font-size:0.8rem; color:#888;">Developer's Learning Notebook — v2.0</p>
+                            <p style="margin:0; font-size:0.8rem; color:#888;">Developer's Learning Notebook — v2.0
+                            </p>
                         </div>
                     </div>
                     <p style="color:var(--text-color); line-height:1.7; margin-bottom:20px; font-size:0.92rem;">
@@ -358,56 +378,72 @@
                             <option value="1">★☆☆☆☆ (要復習)</option>
                         </select>
                     </div>
-                </div>
 
-                <!-- Tags Input -->
-                <div class="form-group">
-                    <label for="log-tags">タグ (カンマ区切り)</label>
-                    <input type="text" id="log-tags" placeholder="例: JavaScript, バグ, 初心者">
-                    <!-- Suggested Tags Area -->
-                    <div id="tag-suggestions" style="margin-top:5px; display:flex; flex-wrap:wrap; gap:5px;"></div>
-                </div>
-
-                <div class="form-group">
-                    <label for="log-content">内容 (Markdown)</label>
-                    <!-- Templates -->
-                    <div style="margin-bottom:5px; display:flex; gap:5px;">
-                        <span style="font-size:0.8rem; color:#666; align-self:center;">テンプレート:</span>
-                        <button type="button" class="btn-template" data-tmpl="bug"
-                            style="cursor:pointer; padding:2px 8px; border-radius:4px; border:1px solid #ddd; background:#f9f9f9;">🐛
-                            バグ報告</button>
-                        <button type="button" class="btn-template" data-tmpl="learning"
-                            style="cursor:pointer; padding:2px 8px; border-radius:4px; border:1px solid #ddd; background:#f9f9f9;">📚
-                            学習メモ</button>
-                        <button type="button" class="btn-template" data-tmpl="idea"
-                            style="cursor:pointer; padding:2px 8px; border-radius:4px; border:1px solid #ddd; background:#f9f9f9;">💡
-                            アイデア</button>
+                    <!-- Tags Input -->
+                    <div class="form-group">
+                        <label>タグ (カンマ区切り)</label>
+                        <input type="text" id="log-tags" placeholder="例: JavaScript, ProjectA, BugFix">
                     </div>
-                    <textarea id="log-content" rows="10" required class="input-field"
-                        placeholder="# タイトル&#10;- 項目1&#10;```js&#10;console.log('test')&#10;```"></textarea>
-                    <p style="font-size: 0.8rem; color: #888; margin-top: 5px;">
-                        📷 画像をペースト(Ctrl+V) または ドラッグ＆ドロップで挿入できます
-                    </p>
-                </div>
 
-                <!-- Markdown Cheat Sheet -->
-                <div class="cheat-sheet-container">
-                    <button type="button" id="btn-toggle-cheat-sheet" class="btn-text">Markdownガイドを表示</button>
-                    <div id="cheat-sheet" class="cheat-sheet hidden">
-                        <h4>Markdown 記法ガイド</h4>
-                        <ul>
-                            <li><strong># Title</strong> : 見出し (H1) <span
-                                    style="color:#e74c3c; font-size:0.8em;">(半角スペース必須)</span></li>
-                            <li><strong>## Subtitle</strong> : 小見出し (H2)</li>
-                            <li><strong>- List</strong> : リスト <span
-                                    style="color:#e74c3c; font-size:0.8em;">(半角スペース必須)</span></li>
-                            <li><strong>**Bold**</strong> : 太字</li>
-                            <li><strong>```js</strong> : コードブロック (JS)</li>
-                        </ul>
+                    <div class="form-group">
+                        <label for="log-understanding" style="display:flex; justify-content:space-between;">
+                            <span>理解度 (自己評価)</span>
+                            <span id="understanding-value" style="font-weight:bold; color:var(--primary-color);">3 -
+                                普通</span>
+                        </label>
+                        <input type="range" id="log-understanding" min="1" max="5" value="3" step="1"
+                            style="width:100%;">
+                        <div
+                            style="display:flex; justify-content:space-between; font-size:0.75rem; color:#888; margin-top:4px;">
+                            <span>1: 😵 わからない</span>
+                            <span>5: 🤩 完璧</span>
+                        </div>
                     </div>
-                </div>
 
-                <button type="submit" class="btn-primary">保存する</button>
+                    <div class="form-actions">
+                        <div id="tag-suggestions" style="margin-top:5px; display:flex; flex-wrap:wrap; gap:5px;"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="log-content">内容 (Markdown)</label>
+                        <!-- Templates -->
+                        <div style="margin-bottom:5px; display:flex; gap:5px;">
+                            <span style="font-size:0.8rem; color:#666; align-self:center;">テンプレート:</span>
+                            <button type="button" class="btn-template" data-tmpl="bug"
+                                style="cursor:pointer; padding:2px 8px; border-radius:4px; border:1px solid #ddd; background:#f9f9f9;">🐛
+                                バグ報告</button>
+                            <button type="button" class="btn-template" data-tmpl="learning"
+                                style="cursor:pointer; padding:2px 8px; border-radius:4px; border:1px solid #ddd; background:#f9f9f9;">📚
+                                学習メモ</button>
+                            <button type="button" class="btn-template" data-tmpl="idea"
+                                style="cursor:pointer; padding:2px 8px; border-radius:4px; border:1px solid #ddd; background:#f9f9f9;">💡
+                                アイデア</button>
+                        </div>
+                        <textarea id="log-content" rows="10" required class="input-field"
+                            placeholder="# タイトル&#10;- 項目1&#10;```js&#10;console.log('test')&#10;```"></textarea>
+                        <p style="font-size: 0.8rem; color: #888; margin-top: 5px;">
+                            📷 画像をペースト(Ctrl+V) または ドラッグ＆ドロップで挿入できます
+                        </p>
+                    </div>
+
+                    <!-- Markdown Cheat Sheet -->
+                    <div class="cheat-sheet-container">
+                        <button type="button" id="btn-toggle-cheat-sheet" class="btn-text">Markdownガイドを表示</button>
+                        <div id="cheat-sheet" class="cheat-sheet hidden">
+                            <h4>Markdown 記法ガイド</h4>
+                            <ul>
+                                <li><strong># Title</strong> : 見出し (H1) <span
+                                        style="color:#e74c3c; font-size:0.8em;">(半角スペース必須)</span></li>
+                                <li><strong>## Subtitle</strong> : 小見出し (H2)</li>
+                                <li><strong>- List</strong> : リスト <span
+                                        style="color:#e74c3c; font-size:0.8em;">(半角スペース必須)</span></li>
+                                <li><strong>**Bold**</strong> : 太字</li>
+                                <li><strong>```js</strong> : コードブロック (JS)</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary">保存する</button>
             </form>
         </div>
     </div>

@@ -1,3 +1,5 @@
+import { StatsEngine } from './analytics/statsEngine.js';
+import { LearningAnalyzer } from './analytics/learningAnalyzer.js';
 
 export const UI = {
     elements: {},
@@ -243,13 +245,38 @@ export const UI = {
         }
 
         // Quick Review (Dashboard)
+        // Quick Review (Dashboard)
         const btnQuickReview = document.getElementById('btn-quick-review');
         if (btnQuickReview) {
             btnQuickReview.addEventListener('click', () => {
+                const logs = handlers.getAllLogs ? handlers.getAllLogs() : [];
+                if (logs.length === 0) {
+                    alert('データがありません。');
+                    return;
+                }
+
+                // Get Review Queue
+                const queue = LearningAnalyzer.getReviewQueue(logs, 5);
+                if (queue.length === 0) {
+                    alert('復習が必要な項目は見つかりませんでした！\n素晴らしいです！');
+                    // Fallback to random if user wants to study anyway? 
+                    // For now, just return. 
+                    return;
+                }
+
+                // Pick top priority
+                const target = queue[0];
+
                 const activeItem = this.elements.projectList.querySelector('.active');
                 if (activeItem) activeItem.classList.remove('active');
 
-                handlers.onReview(true); // pass true for "Global Review" mode
+                // Open in edit mode
+                this.openEditLogModal(target);
+
+                // Show motivation message
+                setTimeout(() => {
+                    alert(` 🔥 忘却スコアが高い項目です: "${target.title}"\n復習して「理解度」を更新しましょう！`);
+                }, 100);
             });
         }
 
@@ -360,15 +387,36 @@ export const UI = {
             const tagsInput = document.getElementById('log-tags').value;
             const tags = tagsInput.split(',').map(t => t.trim()).filter(t => t.length > 0);
 
+            // Phase 9C: Understanding
+            const understanding = parseInt(document.getElementById('log-understanding').value) || 3;
+
             if (id) {
                 // UPDATE
-                handlers.onLogUpdate(id, { title, type, content, tags });
+                handlers.onLogUpdate(id, { title, type, content, tags, understanding });
             } else {
                 // CREATE
-                handlers.onLogCreate(title, type, content, tags);
+                handlers.onLogCreate(title, type, content, tags, understanding);
             }
             elements.modalLog.classList.add('hidden');
         });
+
+        // Phase 9C: Slider Event
+        const slider = document.getElementById('log-understanding');
+        const sliderVal = document.getElementById('understanding-value');
+        if (slider && sliderVal) {
+            slider.addEventListener('input', (e) => {
+                const v = parseInt(e.target.value);
+                let text = '';
+                switch (v) {
+                    case 1: text = '1 - 😵 わからない'; break;
+                    case 2: text = '2 - 😓 不安'; break;
+                    case 3: text = '3 - 😐 普通'; break;
+                    case 4: text = '4 - 😀 良い'; break;
+                    case 5: text = '5 - 🤩 完璧'; break;
+                }
+                sliderVal.textContent = text;
+            });
+        }
     },
 
     resetLogForm() {
@@ -376,6 +424,12 @@ export const UI = {
         this.elements.logIdInput.value = '';
         this.elements.modalLogTitle.textContent = 'New Log';
         this.elements.cheatSheet.classList.add('hidden');
+
+        // Reset Understanding
+        const slider = document.getElementById('log-understanding');
+        const sliderVal = document.getElementById('understanding-value');
+        if (slider) slider.value = 3;
+        if (sliderVal) sliderVal.textContent = '3 - 😐 普通';
     },
 
     openEditLogModal(log) {
@@ -387,6 +441,23 @@ export const UI = {
         // Render suggestions
         const allTags = this.handlers.getAllTags ? this.handlers.getAllTags() : [];
         this.renderTagSuggestions(allTags);
+
+        // Phase 9C: Understanding
+        const understanding = log.understanding || 3;
+        const slider = document.getElementById('log-understanding');
+        const sliderVal = document.getElementById('understanding-value');
+        if (slider) slider.value = understanding;
+        if (sliderVal) {
+            let text = '';
+            switch (parseInt(understanding)) {
+                case 1: text = '1 - 😵 わからない'; break;
+                case 2: text = '2 - 😓 不安'; break;
+                case 3: text = '3 - 😐 普通'; break;
+                case 4: text = '4 - 😀 良い'; break;
+                case 5: text = '5 - 🤩 完璧'; break;
+            }
+            sliderVal.textContent = text;
+        }
 
         document.getElementById('log-content').value = log.content;
         this.elements.modalLogTitle.textContent = 'ログ編集';
@@ -524,44 +595,45 @@ export const UI = {
     },
 
     updateDashboard(allLogs) {
-        // A. Summary Stats
-        const now = new Date();
-        const oneWeekAgo = new Date(); oneWeekAgo.setDate(now.getDate() - 7);
-        const oneMonthAgo = new Date(); oneMonthAgo.setDate(now.getDate() - 30);
+        // A. Calculate Stats using Engine
+        const stats = StatsEngine.calculateStats({ logs: allLogs });
 
-        const total = allLogs.length;
-        const weekly = allLogs.filter(l => new Date(l.createdAt) >= oneWeekAgo).length;
-        const monthly = allLogs.filter(l => new Date(l.createdAt) >= oneMonthAgo).length;
-
-        // Update Stats Cards
+        // Update Summary Cards
         const setStat = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
-        setStat('stat-total', total);
-        setStat('stat-weekly', weekly);
-        setStat('stat-monthly', monthly);
-        setStat('total-logs-count', total); // Fallback for old layout if exists
+        setStat('stat-total', stats.totalLogs);
+        setStat('stat-weekly', stats.weeklyLogs);
+        setStat('stat-streak', stats.streak);
+        setStat('total-logs-count', stats.totalLogs); // Fallback
 
-        // Streak Calc
-        const streakEl = document.getElementById('stat-streak');
-        if (streakEl) {
-            const dates = new Set(allLogs.map(l => new Date(l.createdAt).toLocaleDateString()));
-            let streak = 0;
-            let d = new Date();
-            // Check today or yesterday
-            if (!dates.has(d.toLocaleDateString())) {
-                d.setDate(d.getDate() - 1);
+        // Update Language Stats
+        const langContainer = document.getElementById('stats-languages');
+        if (langContainer) {
+            if (stats.languages.length === 0) {
+                langContainer.innerHTML = '<p style="color:#aaa; font-size:0.8rem;">まだデータがありません。</p>';
+            } else {
+                langContainer.innerHTML = stats.languages.map(l => {
+                    const pct = Math.round((l.count / stats.totalLogs) * 100);
+                    return `
+                    <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem;">
+                        <span style="width:80px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${this.escapeHtml(l.tag)}">${this.escapeHtml(l.tag)}</span>
+                        <div style="flex:1; display:flex; align-items:center; gap:8px;">
+                            <div style="flex:1; height:6px; background:var(--border-color); border-radius:3px; overflow:hidden;">
+                                <div style="width:${pct}%; height:100%; background:var(--primary-color);"></div>
+                            </div>
+                            <span style="font-size:0.75rem; color:#888; width:24px; text-align:right;">${l.count}</span>
+                        </div>
+                    </div>`;
+                }).join('');
             }
-            while (dates.has(d.toLocaleDateString())) {
-                streak++;
-                d.setDate(d.getDate() - 1);
-            }
-            streakEl.textContent = streak;
         }
 
-        // B. Heatmap (Reuse existing logic)
+        // B. Heatmap (GitHub-style)
         const graphContainer = document.getElementById('contribution-graph');
         if (graphContainer) {
             graphContainer.innerHTML = '';
             const daysMap = {};
+            const now = new Date();
+
             allLogs.forEach(log => {
                 const dateKey = new Date(log.createdAt).toISOString().split('T')[0];
                 daysMap[dateKey] = (daysMap[dateKey] || 0) + 1;
@@ -584,50 +656,12 @@ export const UI = {
             }
         }
 
-        // C. Skills (Chart.js)
-        const ctx = document.getElementById('skills-chart');
-        if (ctx) {
-            const tagCounts = {};
-            allLogs.forEach(l => {
-                if (l.tags && l.tags.length > 0) {
-                    l.tags.forEach(t => tagCounts[t] = (tagCounts[t] || 0) + 1);
-                } else {
-                    tagCounts['(No Tag)'] = (tagCounts['(No Tag)'] || 0) + 1;
-                }
-            });
+        // C. Skills (Chart.js) logic removed in favor of internal StatsEngine logic
+        // If we want to keep using Chart.js, we can use stats.languages
 
-            // Limit to top 8
-            const sortedTags = Object.entries(tagCounts).sort((a, b) => b[1] - a[1]).slice(0, 8);
-            const labels = sortedTags.map(x => x[0]);
-            const data = sortedTags.map(x => x[1]);
 
-            if (this.skillsChart) {
-                this.skillsChart.destroy();
-            }
-
-            // Check if Chart is defined (loaded)
-            if (typeof Chart !== 'undefined') {
-                this.skillsChart = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: labels,
-                        datasets: [{
-                            data: data,
-                            backgroundColor: [
-                                '#3498db', '#e74c3c', '#2ecc71', '#f1c40f',
-                                '#9b59b6', '#34495e', '#1abc9c', '#e67e22'
-                            ]
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        plugins: {
-                            legend: { position: 'right' }
-                        }
-                    }
-                });
-            }
-        }
+        // Define 'now' for subsequent blocks
+        const now = new Date();
 
         // D. Issues (Low Level)
         const issuesContainer = document.getElementById('list-issues');

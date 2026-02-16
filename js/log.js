@@ -20,7 +20,11 @@ export const LogModule = {
             content,
             tags,
             level: parseInt(level),
-            createdAt: new Date().toISOString()
+            understanding: parseInt(level), // Aliased for LearningAnalyzer
+            createdAt: new Date().toISOString(),
+            reviewCount: 0,
+            lastReviewedAt: null,
+            nextReviewAt: null
         };
         data.logs.push(newLog);
         return newLog;
