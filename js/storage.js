@@ -1,10 +1,13 @@
+import { MigrationModule } from './migration.js';
 
 const STORAGE_KEY = 'devnote_data';
+const BACKUP_KEY = 'devnote_data_backup';
 
 const defaultData = {
     projects: [],
     logs: [],
-    snippets: []
+    snippets: [],
+    schemaVersion: 2
 };
 
 export const Storage = {
@@ -14,15 +17,32 @@ export const Storage = {
      */
     load() {
         const json = localStorage.getItem(STORAGE_KEY);
+        let data;
+
         if (!json) {
-            return { ...defaultData }; // Return copy of default
+            data = { ...defaultData };
+        } else {
+            try {
+                data = JSON.parse(json);
+            } catch (e) {
+                console.error('Failed to parse storage data:', e);
+                // Try reading backup
+                const backup = localStorage.getItem(BACKUP_KEY);
+                if (backup) {
+                    try {
+                        console.warn('Recovering from backup...');
+                        data = JSON.parse(backup);
+                    } catch (be) {
+                        data = { ...defaultData };
+                    }
+                } else {
+                    data = { ...defaultData };
+                }
+            }
         }
-        try {
-            return JSON.parse(json);
-        } catch (e) {
-            console.error('Failed to parse storage data:', e);
-            return { ...defaultData };
-        }
+
+        // Run Migration
+        return MigrationModule.migrate(data);
     },
 
     /**
@@ -44,5 +64,23 @@ export const Storage = {
      */
     clear() {
         localStorage.removeItem(STORAGE_KEY);
+    },
+
+    /**
+     * Start Auto Backup (every 5 mins)
+     */
+    startAutoBackup() {
+        console.log('Auto Backup started (Interval: 5min)');
+        setInterval(() => {
+            const json = localStorage.getItem(STORAGE_KEY);
+            if (json) {
+                try {
+                    localStorage.setItem(BACKUP_KEY, json);
+                    console.log('Auto backup saved at', new Date().toLocaleTimeString());
+                } catch (e) {
+                    console.warn('Auto backup failed (Storage full?):', e);
+                }
+            }
+        }, 5 * 60 * 1000);
     }
 };

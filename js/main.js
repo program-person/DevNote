@@ -25,6 +25,9 @@ const App = {
         // Load Data
         this.data = Storage.load();
 
+        // Start Auto Backup Service
+        Storage.startAutoBackup();
+
         // Try Init Sync
         const storedKey = localStorage.getItem('devnote_sync_key');
         // Always try to use default config if no override
