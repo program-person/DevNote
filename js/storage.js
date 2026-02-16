@@ -3,7 +3,8 @@ const STORAGE_KEY = 'devnote_data';
 
 const defaultData = {
     projects: [],
-    logs: []
+    logs: [],
+    snippets: []
 };
 
 export const Storage = {

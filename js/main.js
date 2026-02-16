@@ -3,6 +3,7 @@ import { Storage } from './storage.js';
 import { ProjectModule } from './project.js';
 import { LogModule } from './log.js';
 import { UI } from './ui.js';
+import { SnippetModule } from './snippet.js';
 import { TimerModule } from './timer.js';
 import { SyncModule } from './sync.js';
 
@@ -62,7 +63,12 @@ const App = {
             // Phase 6: UI Enhancement Handlers
             onThemeToggle: () => this.handleThemeToggle(),
             onLogSort: (sortType) => this.handleLogSort(sortType),
-            onTagFilter: (tag) => this.handleTagFilter(tag)
+            onTagFilter: (tag) => this.handleTagFilter(tag),
+            // Phase 8: Snippet Handlers
+            onSnippetCreate: (title, lang, code) => this.handleSnippetCreate(title, lang, code),
+            onSnippetUpdate: (id, updates) => this.handleSnippetUpdate(id, updates),
+            onSnippetDelete: (id) => this.handleSnippetDelete(id),
+            getSnippets: () => this.getSnippetsForCurrentProject()
         });
 
         // Init Timer
@@ -323,6 +329,32 @@ const App = {
         const logs = LogModule.findByProject(this.data, this.currentProjectId);
         const filtered = tag ? logs.filter(l => l.tags && l.tags.includes(tag)) : logs;
         UI.renderLogList(filtered);
+    },
+
+    // Phase 8: Snippet Handlers
+    handleSnippetCreate(title, language, code) {
+        if (!this.currentProjectId) return;
+        SnippetModule.create(this.data, this.currentProjectId, title, language, code);
+        this.save();
+        UI.renderSnippetList(this.getSnippetsForCurrentProject());
+    },
+
+    handleSnippetUpdate(id, updates) {
+        SnippetModule.update(this.data, id, updates);
+        this.save();
+        UI.renderSnippetList(this.getSnippetsForCurrentProject());
+    },
+
+    handleSnippetDelete(id) {
+        if (!confirm('このスニペットを削除しますか？')) return;
+        SnippetModule.delete(this.data, id);
+        this.save();
+        UI.renderSnippetList(this.getSnippetsForCurrentProject());
+    },
+
+    getSnippetsForCurrentProject() {
+        if (!this.currentProjectId) return [];
+        return SnippetModule.getByProject(this.data, this.currentProjectId);
     }
 };
 

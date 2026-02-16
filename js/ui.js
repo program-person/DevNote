@@ -24,7 +24,11 @@ export const UI = {
             modalLogTitle: document.getElementById('modal-log-title'),
             btnToggleCheatSheet: document.getElementById('btn-toggle-cheat-sheet'),
             cheatSheet: document.getElementById('cheat-sheet'),
-            tagSuggestions: document.getElementById('tag-suggestions')
+            tagSuggestions: document.getElementById('tag-suggestions'),
+            // Phase 8: Snippets
+            modalSnippet: document.getElementById('modal-snippet'),
+            formSnippet: document.getElementById('form-snippet'),
+            snippetList: document.getElementById('snippet-list')
         };
 
         this.setupEventListeners();
@@ -289,6 +293,51 @@ export const UI = {
         elements.btnToggleCheatSheet.addEventListener('click', () => {
             elements.cheatSheet.classList.toggle('hidden');
         });
+
+        // Phase 8: Tab Switching
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const tab = btn.dataset.tab;
+                document.getElementById('tab-logs').classList.toggle('hidden', tab !== 'logs');
+                document.getElementById('tab-snippets').classList.toggle('hidden', tab !== 'snippets');
+                if (tab === 'snippets') {
+                    this.renderSnippetList(handlers.getSnippets());
+                }
+            });
+        });
+
+        // Phase 8: Snippet Modal
+        const btnNewSnippet = document.getElementById('btn-new-snippet');
+        if (btnNewSnippet) {
+            btnNewSnippet.addEventListener('click', () => {
+                document.getElementById('snippet-edit-id').value = '';
+                document.getElementById('snippet-modal-title').textContent = '新しいスニペットを保存';
+                elements.formSnippet.reset();
+                elements.modalSnippet.classList.remove('hidden');
+            });
+        }
+
+        // Phase 8: Snippet Form
+        if (elements.formSnippet) {
+            elements.formSnippet.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const editId = document.getElementById('snippet-edit-id').value;
+                const title = document.getElementById('snippet-title').value;
+                const language = document.getElementById('snippet-language').value;
+                const code = document.getElementById('snippet-code').value;
+
+                if (editId) {
+                    handlers.onSnippetUpdate(editId, { title, language, code });
+                } else {
+                    handlers.onSnippetCreate(title, language, code);
+                }
+                elements.modalSnippet.classList.add('hidden');
+                e.target.reset();
+            });
+        }
 
         // Forms
         elements.formProject.addEventListener('submit', (e) => {
@@ -709,10 +758,92 @@ export const UI = {
         container.innerHTML = html;
     },
 
+    // Phase 8: Render Snippet List
+    renderSnippetList(snippets) {
+        const container = this.elements.snippetList;
+        if (!container) return;
+
+        if (!snippets || snippets.length === 0) {
+            container.innerHTML = '<div class="snippet-empty">💾 まだスニペットがありません。<br>「+ 新規スニペット」でコードを保存しましょう！</div>';
+            return;
+        }
+
+        // Sort by newest first
+        const sorted = [...snippets].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        container.innerHTML = sorted.map(s => {
+            // Escape HTML in code
+            const escapedCode = this.escapeHtml(s.code);
+            const previewLines = s.code.split('\n').slice(0, 8).join('\n');
+            const escapedPreview = this.escapeHtml(previewLines);
+            const hasMore = s.code.split('\n').length > 8;
+            const date = new Date(s.createdAt).toLocaleDateString('ja-JP');
+
+            return `
+            <div class="snippet-card" data-snippet-id="${s.id}">
+                <div class="snippet-card-header">
+                    <h4>
+                        <span>${this.escapeHtml(s.title)}</span>
+                        <span class="lang-badge">${s.language}</span>
+                    </h4>
+                    <div class="snippet-actions">
+                        <button class="btn-snippet-copy" data-id="${s.id}" title="コピー">📋 コピー</button>
+                        <button class="btn-snippet-edit" data-id="${s.id}" title="編集">✏️</button>
+                        <button class="btn-snippet-delete" data-id="${s.id}" title="削除">🗑️</button>
+                    </div>
+                </div>
+                <pre class="snippet-code-preview"><code class="language-${s.language}">${escapedPreview}</code>${hasMore ? '\n...' : ''}</pre>
+                <div class="snippet-card-footer">${date}</div>
+            </div>`;
+        }).join('');
+
+        // Syntax highlight all snippets
+        container.querySelectorAll('pre code').forEach(block => {
+            if (typeof hljs !== 'undefined') {
+                hljs.highlightElement(block);
+            }
+        });
+
+        // Copy buttons
+        container.querySelectorAll('.btn-snippet-copy').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const snippet = snippets.find(s => s.id === btn.dataset.id);
+                if (snippet) {
+                    navigator.clipboard.writeText(snippet.code).then(() => {
+                        btn.textContent = '✅ コピー済';
+                        setTimeout(() => btn.textContent = '📋 コピー', 1500);
+                    });
+                }
+            });
+        });
+
+        // Edit buttons
+        container.querySelectorAll('.btn-snippet-edit').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const snippet = snippets.find(s => s.id === btn.dataset.id);
+                if (snippet) {
+                    document.getElementById('snippet-edit-id').value = snippet.id;
+                    document.getElementById('snippet-modal-title').textContent = 'スニペットを編集';
+                    document.getElementById('snippet-title').value = snippet.title;
+                    document.getElementById('snippet-language').value = snippet.language;
+                    document.getElementById('snippet-code').value = snippet.code;
+                    this.elements.modalSnippet.classList.remove('hidden');
+                }
+            });
+        });
+
+        // Delete buttons
+        container.querySelectorAll('.btn-snippet-delete').forEach(btn => {
+            btn.addEventListener('click', () => {
+                this.handlers.onSnippetDelete(btn.dataset.id);
+            });
+        });
+    },
+
 
     showProjectView(project) {
         this.elements.dashboardView.classList.add('hidden');
-        document.getElementById('review-view').classList.add('hidden'); // Ensure review is hidden
+        document.getElementById('review-view').classList.add('hidden');
         this.elements.logListView.classList.remove('hidden');
 
         // Show Search Bar and Review Button
@@ -725,6 +856,15 @@ export const UI = {
 
         this.elements.currentProjectTitle.textContent = project.name;
         this.elements.btnNewLog.disabled = false;
+
+        // Reset tabs to logs
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        const logsTab = document.querySelector('.tab-btn[data-tab="logs"]');
+        if (logsTab) logsTab.classList.add('active');
+        const tabLogs = document.getElementById('tab-logs');
+        const tabSnippets = document.getElementById('tab-snippets');
+        if (tabLogs) tabLogs.classList.remove('hidden');
+        if (tabSnippets) tabSnippets.classList.add('hidden');
     },
 
     showDashboard() {

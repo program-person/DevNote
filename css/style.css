@@ -598,3 +598,138 @@ textarea.input-field:focus {
 .btn-copy:hover {
     background: rgba(255, 255, 255, 0.3);
 }
+
+/* ===== Tabs ===== */
+.tab-nav {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: 16px;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-size: 0.95rem;
+    color: #888;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.tab-btn:hover {
+    color: var(--text-color);
+    background: rgba(0, 0, 0, 0.03);
+}
+
+.tab-btn.active {
+    color: var(--primary-color);
+    border-bottom-color: var(--primary-color);
+    font-weight: 600;
+}
+
+.tab-content.hidden {
+    display: none;
+}
+
+/* ===== Snippet Cards ===== */
+.snippet-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.snippet-card {
+    background: var(--card-bg);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.snippet-card:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.snippet-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.snippet-card-header h4 {
+    margin: 0;
+    font-size: 0.95rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.lang-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    background: var(--primary-color);
+    color: white;
+}
+
+.snippet-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.snippet-actions button {
+    padding: 4px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background: var(--input-bg);
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: background 0.2s;
+    color: var(--text-color);
+}
+
+.snippet-actions button:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.snippet-code-preview {
+    margin: 0;
+    padding: 12px 16px;
+    overflow-x: auto;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    max-height: 200px;
+    overflow-y: auto;
+    background: #282c34;
+    color: #abb2bf;
+}
+
+.snippet-code-preview code {
+    font-family: 'Cascadia Code', 'Fira Code', 'Consolas', monospace;
+}
+
+.snippet-card-footer {
+    padding: 6px 16px;
+    font-size: 0.75rem;
+    color: #888;
+    border-top: 1px solid var(--border-color);
+}
+
+/* Empty state */
+.snippet-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: #aaa;
+    font-size: 0.95rem;
+}

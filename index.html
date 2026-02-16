@@ -147,8 +147,28 @@
             </div>
 
             <div id="log-list-view" class="view-container hidden">
-                <div id="log-list" class="log-list">
-                    <!-- Logs will be injected here -->
+                <!-- Tab Navigation -->
+                <div class="tab-nav" id="project-tabs">
+                    <button class="tab-btn active" data-tab="logs">📝 ログ</button>
+                    <button class="tab-btn" data-tab="snippets">💾 スニペット</button>
+                </div>
+
+                <!-- Log Tab Content -->
+                <div id="tab-logs" class="tab-content">
+                    <div id="log-list" class="log-list">
+                        <!-- Logs will be injected here -->
+                    </div>
+                </div>
+
+                <!-- Snippet Tab Content -->
+                <div id="tab-snippets" class="tab-content hidden">
+                    <div style="display:flex; justify-content:flex-end; margin-bottom:12px;">
+                        <button id="btn-new-snippet" class="btn-primary" style="font-size:0.85rem; padding:6px 14px;">+
+                            新規スニペット</button>
+                    </div>
+                    <div id="snippet-list" class="snippet-list">
+                        <!-- Snippets will be injected here -->
+                    </div>
                 </div>
             </div>
 
@@ -179,6 +199,48 @@
                 </div>
             </div>
         </main>
+    </div>
+
+    <!-- Modal: Snippet Create/Edit -->
+    <div id="modal-snippet" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 id="snippet-modal-title">新しいスニペットを保存</h2>
+            <form id="form-snippet">
+                <input type="hidden" id="snippet-edit-id" value="">
+                <div class="form-group">
+                    <label for="snippet-title">タイトル</label>
+                    <input type="text" id="snippet-title" class="input-field" required placeholder="例: useEffectの基本形">
+                </div>
+                <div class="form-group">
+                    <label for="snippet-language">言語</label>
+                    <select id="snippet-language" class="input-field" style="width:auto; min-width:200px;">
+                        <option value="javascript">JavaScript</option>
+                        <option value="python">Python</option>
+                        <option value="html">HTML</option>
+                        <option value="css">CSS</option>
+                        <option value="jsx">React (JSX)</option>
+                        <option value="typescript">TypeScript</option>
+                        <option value="java">Java</option>
+                        <option value="cpp">C++</option>
+                        <option value="csharp">C#</option>
+                        <option value="go">Go</option>
+                        <option value="rust">Rust</option>
+                        <option value="sql">SQL</option>
+                        <option value="bash">Bash / Shell</option>
+                        <option value="json">JSON</option>
+                        <option value="yaml">YAML</option>
+                        <option value="plaintext">テキスト</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="snippet-code">コード</label>
+                    <textarea id="snippet-code" class="input-field" rows="12" required placeholder="コードをここに貼り付け..."
+                        style="font-family:'Cascadia Code','Fira Code','Consolas',monospace; font-size:0.9rem; line-height:1.6;"></textarea>
+                </div>
+                <button type="submit" class="btn-primary">💾 保存する</button>
+            </form>
+        </div>
     </div>
 
     <!-- Modal: Create Project -->
