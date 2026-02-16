@@ -57,30 +57,30 @@
 
         <!-- Main Content: Log List & Editor -->
         <main class="main-content">
-            <header class="main-header">
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <h2 id="current-project-title">プロジェクトを選択してください</h2>
-                    <button id="btn-theme-toggle" class="btn-icon" title="ダークモード切替"
-                        style="font-size: 1.5rem;">🌙</button>
+            <header class="main-header" style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <h2 id="current-project-title" style="margin:0; white-space:nowrap;">プロジェクトを選択してください</h2>
+                <button id="btn-theme-toggle" class="btn-icon" title="ダークモード切替"
+                    style="font-size:1.3rem; flex-shrink:0;">🌙</button>
+
+                <!-- Search Bar -->
+                <div id="search-bar-container" style="flex:1; min-width:120px; max-width:300px; display:none;">
+                    <input type="text" id="search-input" class="input-field" placeholder="🔍 ログを検索..."
+                        style="width:100%; padding:6px 12px; font-size:0.9rem;">
                 </div>
 
-                <!-- Phase 4: Search Bar -->
-                <div class="search-container" style="flex:1; margin:0 20px; max-width:400px; display:none;"
-                    id="search-bar-container">
-                    <input type="text" id="search-input" placeholder="ログを検索..."
-                        style="width:100%; padding:0.5rem; border:1px solid #ddd; border-radius:4px;">
-                </div>
-
-                <div class="header-actions" style="display: flex; gap: 0.5rem; align-items: center;">
-                    <select id="log-sort" class="input-field" style="padding: 0.5rem; display:none;">
+                <div style="margin-left:auto; display:flex; gap:8px; align-items:center; flex-shrink:0;">
+                    <select id="log-sort"
+                        style="padding:6px 10px; border:1px solid var(--border-color); border-radius:6px; background:var(--input-bg); color:var(--text-color); font-size:0.85rem; display:none;">
                         <option value="date-new">日付 (新→古)</option>
                         <option value="date-old">日付 (古→新)</option>
                         <option value="title">タイトル順</option>
                         <option value="level">重要度順</option>
                     </select>
                     <button id="btn-review-mode" class="btn-primary"
-                        style="background-color:#9b59b6; margin-right:10px; display:none;">🎲 振り返り</button>
-                    <button id="btn-new-log" class="btn-primary" disabled>+ 新規ログ</button>
+                        style="background-color:#9b59b6; font-size:0.85rem; padding:6px 12px; white-space:nowrap; display:none;">🎲
+                        振り返り</button>
+                    <button id="btn-new-log" class="btn-primary" disabled
+                        style="font-size:0.85rem; padding:6px 12px; white-space:nowrap;">+ 新規ログ</button>
                 </div>
             </header>
 
