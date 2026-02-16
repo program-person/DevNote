@@ -617,6 +617,96 @@ export const UI = {
                 `;
             }
         }
+
+        // F. Contribution Graph (GitHub-style calendar)
+        this.renderContributionGraph(allLogs);
+    },
+
+    renderContributionGraph(allLogs) {
+        const container = document.getElementById('contribution-graph');
+        if (!container) return;
+
+        // Count logs per day
+        const dayCounts = {};
+        allLogs.forEach(log => {
+            const date = new Date(log.createdAt).toISOString().split('T')[0];
+            dayCounts[date] = (dayCounts[date] || 0) + 1;
+        });
+
+        // Build 52 weeks of data (past year)
+        const today = new Date();
+        const oneYearAgo = new Date(today);
+        oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+        // Start from the nearest past Sunday
+        const startDate = new Date(oneYearAgo);
+        startDate.setDate(startDate.getDate() - startDate.getDay());
+
+        // Color scale
+        const getColor = (count) => {
+            if (count === 0) return '#ebedf0';
+            if (count === 1) return '#9be9a8';
+            if (count === 2) return '#40c463';
+            if (count <= 4) return '#30a14e';
+            return '#216e39';
+        };
+
+        // Dark mode colors
+        const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+        const getColorDark = (count) => {
+            if (count === 0) return '#161b22';
+            if (count === 1) return '#0e4429';
+            if (count === 2) return '#006d32';
+            if (count <= 4) return '#26a641';
+            return '#39d353';
+        };
+
+        const colorFn = isDark ? getColorDark : getColor;
+
+        // Build grid (7 rows x ~53 cols)
+        let html = '<div style="display:flex; gap:3px;">';
+
+        // Month labels
+        const months = ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'];
+        let currentDate = new Date(startDate);
+        let lastMonth = -1;
+
+        // Create week columns
+        while (currentDate <= today) {
+            const weekStart = new Date(currentDate);
+            html += '<div style="display:flex; flex-direction:column; gap:3px;">';
+
+            // Month label at top of first week of each month
+            if (currentDate.getMonth() !== lastMonth) {
+                html += `<div style="font-size:0.65rem; color:#888; height:14px; line-height:14px;">${months[currentDate.getMonth()]}</div>`;
+                lastMonth = currentDate.getMonth();
+            } else {
+                html += '<div style="height:14px;"></div>';
+            }
+
+            for (let day = 0; day < 7; day++) {
+                const d = new Date(weekStart);
+                d.setDate(d.getDate() + day);
+
+                if (d > today) {
+                    html += '<div style="width:12px; height:12px;"></div>';
+                    continue;
+                }
+
+                const dateStr = d.toISOString().split('T')[0];
+                const count = dayCounts[dateStr] || 0;
+                const color = colorFn(count);
+                const tooltip = `${d.toLocaleDateString('ja-JP')}: ${count}件のログ`;
+
+                html += `<div style="width:12px; height:12px; border-radius:2px; background:${color};" title="${tooltip}"></div>`;
+
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            html += '</div>';
+        }
+
+        html += '</div>';
+        container.innerHTML = html;
     },
 
 
