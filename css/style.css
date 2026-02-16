@@ -279,13 +279,15 @@ body {
     width: 400px;
     position: relative;
     max-height: 90vh;
+    display: flex;
+    flex-direction: column;
     animation: modalFadeIn 0.3s ease;
     overflow-y: auto;
-    /* Enable scrolling */
 }
 
 .modal-content.large {
-    width: 600px;
+    width: 90%;
+    max-width: 900px;
 }
 
 .close-modal {
