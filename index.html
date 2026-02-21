@@ -378,72 +378,70 @@
                             <option value="1">★☆☆☆☆ (要復習)</option>
                         </select>
                     </div>
+                </div>
+                <div class="form-group">
+                    <label>タグ (カンマ区切り)</label>
+                    <input type="text" id="log-tags" placeholder="例: JavaScript, ProjectA, BugFix">
+                </div>
 
-                    <!-- Tags Input -->
-                    <div class="form-group">
-                        <label>タグ (カンマ区切り)</label>
-                        <input type="text" id="log-tags" placeholder="例: JavaScript, ProjectA, BugFix">
+                <div class="form-group">
+                    <label for="log-understanding" style="display:flex; justify-content:space-between;">
+                        <span>理解度 (自己評価)</span>
+                        <span id="understanding-value" style="font-weight:bold; color:var(--primary-color);">3 -
+                            普通</span>
+                    </label>
+                    <input type="range" id="log-understanding" min="1" max="5" value="3" step="1" style="width:100%;">
+                    <div
+                        style="display:flex; justify-content:space-between; font-size:0.75rem; color:#888; margin-top:4px;">
+                        <span>1: 😵 わからない</span>
+                        <span>5: 🤩 完璧</span>
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="log-understanding" style="display:flex; justify-content:space-between;">
-                            <span>理解度 (自己評価)</span>
-                            <span id="understanding-value" style="font-weight:bold; color:var(--primary-color);">3 -
-                                普通</span>
-                        </label>
-                        <input type="range" id="log-understanding" min="1" max="5" value="3" step="1"
-                            style="width:100%;">
-                        <div
-                            style="display:flex; justify-content:space-between; font-size:0.75rem; color:#888; margin-top:4px;">
-                            <span>1: 😵 わからない</span>
-                            <span>5: 🤩 完璧</span>
-                        </div>
+                <div class="form-actions">
+                    <div id="tag-suggestions" style="margin-top:5px; display:flex; flex-wrap:wrap; gap:5px;"></div>
+                </div>
+
+                <div class="form-group">
+                    <label for="log-content">内容 (Markdown)</label>
+                    <!-- Templates -->
+                    <div style="margin-bottom:5px; display:flex; gap:5px;">
+                        <span style="font-size:0.8rem; color:#666; align-self:center;">テンプレート:</span>
+                        <button type="button" class="btn-template" data-tmpl="bug"
+                            style="cursor:pointer; padding:2px 8px; border-radius:4px; border:1px solid #ddd; background:#f9f9f9;">🐛
+                            バグ報告</button>
+                        <button type="button" class="btn-template" data-tmpl="learning"
+                            style="cursor:pointer; padding:2px 8px; border-radius:4px; border:1px solid #ddd; background:#f9f9f9;">📚
+                            学習メモ</button>
+                        <button type="button" class="btn-template" data-tmpl="idea"
+                            style="cursor:pointer; padding:2px 8px; border-radius:4px; border:1px solid #ddd; background:#f9f9f9;">💡
+                            アイデア</button>
                     </div>
+                    <textarea id="log-content" rows="10" required class="input-field"
+                        placeholder="# タイトル&#10;- 項目1&#10;```js&#10;console.log('test')&#10;```"></textarea>
+                    <p style="font-size: 0.8rem; color: #888; margin-top: 5px;">
+                        📷 画像をペースト(Ctrl+V) または ドラッグ＆ドロップで挿入できます
+                    </p>
+                </div>
 
-                    <div class="form-actions">
-                        <div id="tag-suggestions" style="margin-top:5px; display:flex; flex-wrap:wrap; gap:5px;"></div>
+                <!-- Markdown Cheat Sheet -->
+                <div class="cheat-sheet-container">
+                    <button type="button" id="btn-toggle-cheat-sheet" class="btn-text">Markdownガイドを表示</button>
+                    <div id="cheat-sheet" class="cheat-sheet hidden">
+                        <h4>Markdown 記法ガイド</h4>
+                        <ul>
+                            <li><strong># Title</strong> : 見出し (H1) <span
+                                    style="color:#e74c3c; font-size:0.8em;">(半角スペース必須)</span></li>
+                            <li><strong>## Subtitle</strong> : 小見出し (H2)</li>
+                            <li><strong>- List</strong> : リスト <span
+                                    style="color:#e74c3c; font-size:0.8em;">(半角スペース必須)</span></li>
+                            <li><strong>**Bold**</strong> : 太字</li>
+                            <li><strong>```js</strong> : コードブロック (JS)</li>
+                        </ul>
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <label for="log-content">内容 (Markdown)</label>
-                        <!-- Templates -->
-                        <div style="margin-bottom:5px; display:flex; gap:5px;">
-                            <span style="font-size:0.8rem; color:#666; align-self:center;">テンプレート:</span>
-                            <button type="button" class="btn-template" data-tmpl="bug"
-                                style="cursor:pointer; padding:2px 8px; border-radius:4px; border:1px solid #ddd; background:#f9f9f9;">🐛
-                                バグ報告</button>
-                            <button type="button" class="btn-template" data-tmpl="learning"
-                                style="cursor:pointer; padding:2px 8px; border-radius:4px; border:1px solid #ddd; background:#f9f9f9;">📚
-                                学習メモ</button>
-                            <button type="button" class="btn-template" data-tmpl="idea"
-                                style="cursor:pointer; padding:2px 8px; border-radius:4px; border:1px solid #ddd; background:#f9f9f9;">💡
-                                アイデア</button>
-                        </div>
-                        <textarea id="log-content" rows="10" required class="input-field"
-                            placeholder="# タイトル&#10;- 項目1&#10;```js&#10;console.log('test')&#10;```"></textarea>
-                        <p style="font-size: 0.8rem; color: #888; margin-top: 5px;">
-                            📷 画像をペースト(Ctrl+V) または ドラッグ＆ドロップで挿入できます
-                        </p>
-                    </div>
-
-                    <!-- Markdown Cheat Sheet -->
-                    <div class="cheat-sheet-container">
-                        <button type="button" id="btn-toggle-cheat-sheet" class="btn-text">Markdownガイドを表示</button>
-                        <div id="cheat-sheet" class="cheat-sheet hidden">
-                            <h4>Markdown 記法ガイド</h4>
-                            <ul>
-                                <li><strong># Title</strong> : 見出し (H1) <span
-                                        style="color:#e74c3c; font-size:0.8em;">(半角スペース必須)</span></li>
-                                <li><strong>## Subtitle</strong> : 小見出し (H2)</li>
-                                <li><strong>- List</strong> : リスト <span
-                                        style="color:#e74c3c; font-size:0.8em;">(半角スペース必須)</span></li>
-                                <li><strong>**Bold**</strong> : 太字</li>
-                                <li><strong>```js</strong> : コードブロック (JS)</li>
-                            </ul>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="btn-primary">保存する</button>
+                <button type="submit" class="btn-primary">保存する</button>
             </form>
         </div>
     </div>
